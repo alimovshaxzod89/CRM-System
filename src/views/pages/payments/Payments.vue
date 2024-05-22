@@ -64,10 +64,10 @@
 
                 <Column field="group.science" header="Science" sortable style="min-width:12rem"></Column>
                 
-                <Column :exportable="false" style="min-width:9rem">
+                <Column :exportable="false" v-if="!isArRole" style="min-width:9rem">
                     <template #body="slotProps">
-                        <Button icon="pi pi-pencil" v-if="!isArRole" outlined rounded class="mr-2" @click="editPayment(slotProps.data)" />
-                        <Button icon="pi pi-trash" v-if="!isArRole" outlined rounded severity="danger" @click="confirmDeletePayment(slotProps.data)" />
+                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editPayment(slotProps.data)" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeletePayment(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -134,17 +134,6 @@
                 <Button label="Yes" icon="pi pi-check" text @click="deletePayment" />
             </template>
         </Dialog>
-
-        <Dialog v-model:visible="deletePaymentsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="payment">Are you sure you want to delete the selected Payments?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deletePaymentsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedPayments" />
-            </template>
-        </Dialog>
     </div>
 </template>
 
@@ -158,7 +147,6 @@ import { usePaymentsStore } from './PaymentsStoreModule';
 const paymentsStore = usePaymentsStore();
 const paymentsArray = ref([]);
 const groupsArray = ref([]);
-const studentsArray = ref([]); // Array to store students
 const toast = useToast();
 const dt = ref();
 const payment = ref({});
@@ -170,10 +158,6 @@ const filters = ref({
     'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 const submitted = ref(false);
-const statuses = ref([
-    { label: 'Male', value: 'male' },
-    { label: 'Female', value: 'female' },
-]);
 
 onMounted(() => {
     paymentsStore.fetchGroups().then(() => {
@@ -209,10 +193,6 @@ const filteredStudents = computed(() => {
     }
     return [];
 });
-
-const updateStudents = () => {
-    // When the group is updated, the filteredStudents computed property will reactively update the students for the second dropdown
-};
 
 const isArRole = computed(() => localStorage.getItem('role') === 'ar');
 
@@ -251,17 +231,17 @@ const savePayment = async () => {
             if (payment.value.id) {
                 await updatePayment();
             } else {
-                // Fetch the current amountSum for the group
+    
                 const groupResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/groups/${payment.value.group.id}.json`);
                 if (!groupResponse.ok) {
                     throw new Error('Failed to fetch group data');
                 }
                 const groupData = await groupResponse.json();
 
-                // Calculate the new amountSum
+    
                 const newAmountSum = (groupData.amountSum || 0) + payment.value.amount;
 
-                // Update the payment data in the database
+    
                 const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/payments.json`, {
                     method: 'POST',
                     headers: {
@@ -290,7 +270,7 @@ const savePayment = async () => {
                     throw new Error('Failed to update payment with ID from Firebase');
                 }
 
-                // Update the student's data
+    
                 const studentUpdateResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/students/${payment.value.student.id}.json`, {
                     method: 'PATCH',
                     headers: {
@@ -306,7 +286,7 @@ const savePayment = async () => {
                     throw new Error('Failed to update student data');
                 }
 
-                // Update the group amountSum
+    
                 const groupUpdateResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/groups/${payment.value.group.id}.json`, {
                     method: 'PATCH',
                     headers: {
@@ -337,21 +317,18 @@ const savePayment = async () => {
 
 const updatePayment = async () => {
     try {
-        // Fetch the current payment data
         const paymentResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/payments/${payment.value.id}.json`);
         if (!paymentResponse.ok) {
             throw new Error('Failed to fetch payment data');
         }
         const oldPaymentData = await paymentResponse.json();
 
-        // Fetch the current amountSum for the group
         const groupResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/groups/${payment.value.group.id}.json`);
         if (!groupResponse.ok) {
             throw new Error('Failed to fetch group data');
         }
         const groupData = await groupResponse.json();
 
-        // Calculate the new amountSum
         const newAmountSum = (groupData.amountSum || 0) - oldPaymentData.amount + payment.value.amount;
 
         const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/payments/${payment.value.id}.json`, {
@@ -366,7 +343,6 @@ const updatePayment = async () => {
             throw new Error('Failed to update payment with ID from Firebase');
         }
 
-        // Update the student's data
         const studentUpdateResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/students/${payment.value.student.id}.json`, {
             method: 'PATCH',
             headers: {
@@ -382,7 +358,6 @@ const updatePayment = async () => {
             throw new Error('Failed to update student data');
         }
 
-        // Update the group amountSum
         const groupUpdateResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/groups/${payment.value.group.id}.json`, {
             method: 'PATCH',
             headers: {
@@ -443,16 +418,5 @@ const confirmDeletePayment = (prod) => {
 
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const confirmDeleteSelected = () => {
-    deletePaymentsDialog.value = true;
-};
-
-const deleteSelectedPayments = () => {
-    payments.value = payments.value.filter(val => !selectedPayments.value.includes(val));
-    deletePaymentsDialog.value = false;
-    selectedPayments.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Payments Deleted', life: 3000 });
 };
 </script>

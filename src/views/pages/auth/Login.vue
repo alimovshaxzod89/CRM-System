@@ -69,15 +69,12 @@ const formValid = computed(() => {
 });
 
 function validateEmail(email) {
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
 function validatePassword(password) {
-    // Password validation logic here (if any)
-    // Example: Minimum length, special characters, etc.
-    return password.length >= 6; // Example: Password must be at least 6 characters long
+    return password.length >= 6; 
 }
 
 </script>

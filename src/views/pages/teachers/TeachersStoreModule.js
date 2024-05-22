@@ -38,13 +38,10 @@ export const useTeachersStore = defineStore('teachers', {
             if(!teacherData.id){
                 const responseData = await response.json();
         
-                // Assuming the response from Firebase contains the new teacher ID
                 const newTeacherId = responseData.name;
         
-                // Add the ID to the teacherData object
                 teacherData.id = newTeacherId;
         
-                // Now that we have the teacherData with the new ID, let's update the teacher on Firebase
                 const updatedResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/teachers/${newTeacherId}.json`, {
                     method: 'PATCH', // or PUT
                     headers: {
@@ -71,7 +68,7 @@ export const useTeachersStore = defineStore('teachers', {
     
     async updateTeacher(teacherData) {
         try {
-          // Update logic here
+          // Update
           const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/teachers/${teacherData.id}.json`, {
             method: 'PATCH', // or PUT
             headers: {
@@ -93,15 +90,13 @@ export const useTeachersStore = defineStore('teachers', {
 
     async deleteTeacher(teacherId) {
         try {
-            // Delete the teacher from the Firebase database
+            // Delete the teacher from the Firebase
             const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/teachers/${teacherId}.json`, {
                 method: 'DELETE'
             });
             if (!response.ok) {
                 throw new Error('Failed to delete teacher from the database');
             }
-    
-            // If deletion from the database is successful, update the local state
             this.teachers = this.teachers.filter(teacher => teacher.id !== teacherId);
             console.log('Teacher deleted successfully');
     

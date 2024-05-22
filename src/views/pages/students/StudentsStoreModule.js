@@ -38,15 +38,14 @@ export const useStudentsStore = defineStore('students', {
                 const responseData = await response.json();
                 console.log('Data posted successfully!');
         
-                // Assuming the response from Firebase contains the new student ID
+                // New student ID
                 const newStudentId = responseData.name;
         
                 // Add the ID to the studentData object
                 studentData.id = newStudentId;
         
-                // Now that we have the studentData with the new ID, let's update the student on Firebase
                 const updatedResponse = await fetch(`${import.meta.env.VITE_FB_DB_URL}/students/${newStudentId}.json`, {
-                    method: 'PATCH', // or PUT
+                    method: 'PATCH', 
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -71,9 +70,9 @@ export const useStudentsStore = defineStore('students', {
     
     async updateStudent(studentData) {
         try {
-          // Update logic here
+          // Update
           const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/students/${studentData.id}.json`, {
-            method: 'PATCH', // or PUT
+            method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -95,7 +94,7 @@ export const useStudentsStore = defineStore('students', {
 
     async deleteStudent(studentId) {
         try {
-            // Delete the student from the Firebase database
+            // Delete the student from the Firebase
             const response = await fetch(`${import.meta.env.VITE_FB_DB_URL}/students/${studentId}.json`, {
                 method: 'DELETE'
             });
@@ -103,7 +102,6 @@ export const useStudentsStore = defineStore('students', {
                 throw new Error('Failed to delete student from the database');
             }
     
-            // If deletion from the database is successful, update the local state
             this.students = this.students.filter(student => student.id !== studentId);
             console.log('Student deleted successfully');
     

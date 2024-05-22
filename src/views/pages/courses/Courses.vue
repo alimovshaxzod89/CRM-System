@@ -44,11 +44,11 @@
 
                 <Column field="name" header="Course Name" sortable style="min-width:12rem"></Column>
 
-                <Column :exportable="false" style="min-width:3rem;">
+                <Column :exportable="false" v-if="!isArRole" style="min-width:3rem;">
                     <template #body="slotProps">
                         <div style="display: flex; justify-content: end;">
-                            <Button icon="pi pi-pencil" v-if="!isArRole" outlined rounded class="mr-2" @click="editCourse(slotProps.data)" />
-                            <Button icon="pi pi-trash" v-if="!isArRole" outlined rounded severity="danger" @click="confirmDeleteCourse(slotProps.data)" />
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editCourse(slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteCourse(slotProps.data)" />
                         </div>
                     </template>
                 </Column>
@@ -56,7 +56,6 @@
         </div>
 
         <Dialog v-model:visible="courseDialog" :style="{width: '450px'}" header="Add Course" :modal="true" class="p-fluid">
-            <!-- <img v-if="course.image" :src="`https://primefaces.org/cdn/primevue/images/course/${course.image}`" :alt="course.image" class="block m-auto pb-3" /> -->
             <div class="field">
                 <label for="name">Course Name</label>
                 <InputText id="name" v-model.trim="course.name" required="true" autofocus :invalid="submitted && !course.name" />
@@ -77,17 +76,6 @@
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteCourseDialog = false"/>
                 <Button label="Yes" icon="pi pi-check" text @click="deleteCourse" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteCourseDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="course">Are you sure you want to delete the selected Courses?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteCourseDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedCourses" />
             </template>
         </Dialog>
 	</div>
@@ -120,7 +108,6 @@ const coursesArray = ref([]);
 onMounted(() => {
     coursesStore.fetchCourses().then(() => {
         if (typeof coursesStore.courses === 'object' && coursesStore.courses !== null) {
-            // Transform courses object into array of objects
             coursesArray.value = Object.keys(coursesStore.courses).map(key => ({
                 id: key,
                 ...coursesStore.courses[key]
@@ -154,17 +141,17 @@ const saveCourse = async () => {
             if (course.value.id) {
                 await updateCourse();
             } else {
-                // Create new course
+        
                 const newCourse = await coursesStore.saveCourse(course.value);
 
-                // Update the local array
+        
                 coursesArray.value.push(newCourse);
 
                 toast.add({ severity: 'success', summary: 'Successful', detail: 'Course Created', life: 3000 });
 
-                // Close the dialog
+        
                 courseDialog.value = false;
-                // Reset the course object
+        
                 course.value = {};
             }
         } catch (error) {
@@ -177,19 +164,18 @@ const saveCourse = async () => {
 
 const updateCourse = async () => {
     try {
-        // Update existing course
         await coursesStore.updateCourse(course.value);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Course Updated', life: 3000 });
 
-        // Update the course data in coursesArray
+
         const index = coursesArray.value.findIndex(s => s.id === course.value.id);
         if (index !== -1) {
             coursesArray.value[index] = { ...course.value };
         }
 
-        // Close the dialog
+
         courseDialog.value = false;
-        // Reset the course object
+
         course.value = {};
     } catch (error) {
         console.error('Error updating course:', error.message);
@@ -200,39 +186,36 @@ const updateCourse = async () => {
 
 const deleteCourse = async () => {
     try {
-        // Perform deletion logic here
         await coursesStore.deleteCourse(course.value.id);
         
-        // Remove the deleted course from the coursesArray
+
         coursesArray.value = coursesArray.value.filter(s => s.id !== course.value.id);
         
-        // Close the delete confirmation dialog
+
         deleteCourseDialog.value = false;
         
-        // Show a success toast
+
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Course Deleted', life: 3000 });
         
-        // Reset the course object
+
         course.value = {};
     } catch (error) {
         console.error('Error deleting course:', error.message);
-        // Show an error toast
+
         toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete course', life: 3000 });
     }
 };
 
 
 const editCourse = (prod) => {
-    // Find the index of the course to be edited in the coursesArray
     const index = coursesArray.value.findIndex(s => s.id === prod.id);
     if (index !== -1) {
-        // Update the course data at the found index
+
         coursesArray.value[index] = { ...prod };
     } else {
         console.error('Course not found in the array');
     }
     
-    // Assign the edited course data to the course ref
     course.value = { ...prod };
     courseDialog.value = true;
     submitted.value = false; 
@@ -247,14 +230,5 @@ const confirmDeleteCourse = (prod) => {
 
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-const confirmDeleteSelected = () => {
-    deleteCourseDialog.value = true;
-};
-const deleteSelectedCourses = () => {
-    courses.value = courses.value.filter(val => !selectedCourses.value.includes(val));
-    deleteCourseDialog.value = false;
-    selectedCourses.value = null;
-    toast.add({severity:'success', summary: 'Successful', detail: 'courses Deleted', life: 3000});
 };
 </script>

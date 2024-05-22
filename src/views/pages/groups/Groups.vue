@@ -47,8 +47,8 @@
                 <Column :exportable="false" style="min-width:12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-table" outlined rounded class="mr-2" @click="showTableGroup(slotProps.data)" />
-                        <Button icon="pi pi-pencil" v-if="!isArRole" outlined rounded class="mr-2" @click="editGroup(slotProps.data)" />
-                        <Button icon="pi pi-trash" v-if="!isArRole" outlined rounded severity="danger" @click="confirmDeleteGroup(slotProps.data)" />
+                        <Button v-if="!isArRole" icon="pi pi-pencil" outlined rounded class="mr-2" @click="editGroup(slotProps.data)" />
+                        <Button v-if="!isArRole" icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteGroup(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -130,9 +130,9 @@
                 <Column field="telNumber" header="Phone Number" sortable style="min-width:12rem"></Column>
                 <Column field="pasportNum" header="Pasport Number" sortable style="min-width:12rem"></Column>
                 <Column field="gender" header="Gender" sortable style="min-width:12rem"></Column>
-                <Column :exportable="false" style="min-width:9rem">
+                <Column :exportable="false" v-if="!isArRole" style="min-width:9rem">
                     <template #body="slotProps">
-                        <Button icon="pi pi-trash" v-if="!isArRole" outlined rounded severity="danger" @click="confirmDeleteStudent(slotProps.data)" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteStudent(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -217,7 +217,6 @@ const fetchData = async () => {
             groupsStore.fetchCourses(),
         ]);
 
-        // Populate arrays after fetching
         populateArrays();
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -302,7 +301,6 @@ const saveGroup = async () => {
                 group.value.teacher = group.value.teacher.name;
                 group.value.science = group.value.science.name;
                 
-                // Ensure group.students is defined
                 if (!group.value.students) {
                     group.value.students = [];
                 }
@@ -416,12 +414,10 @@ const addStudentToGroup = async () => {
         try {
             await groupsStore.updateGroup(selectedGroup.value);
 
-            // Update the displayed student list
             selectedGroupStudents.value = selectedGroup.value.students;
 
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Student Added', life: 3000 });
 
-            // Close the dialog and reset the selected student
             addStudentDialogVisible.value = false;
             selectedStudent.value = null;
         } catch (error) {
@@ -431,8 +427,6 @@ const addStudentToGroup = async () => {
     }
 };
 
-
-// New functions for deleting a student from the group
 const confirmDeleteStudent = (student) => {
     studentToDelete.value = student;
     deleteStudentDialog.value = true;
@@ -446,10 +440,8 @@ const deleteStudentFromGroup = async () => {
 
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Student Removed', life: 3000 });
 
-        // Update the displayed student list
         selectedGroupStudents.value = selectedGroup.value.students;
 
-        // Close the confirmation dialog
         deleteStudentDialog.value = false;
         studentToDelete.value = null;
     } catch (error) {
@@ -458,7 +450,3 @@ const deleteStudentFromGroup = async () => {
     }
 };
 </script>
-
-<style>
-/* Add any required styles here */
-</style>

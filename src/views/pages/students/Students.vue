@@ -5,7 +5,6 @@
             <Toolbar class="mb-4">
                 <template #start>
                     <Button label="Add Student" icon="pi pi-plus" severity="success" class="mr-2" @click="openNew" />
-                    <!-- <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedStudents || !selectedStudents.length" /> -->
                 </template>
 
                 <template #end>
@@ -74,10 +73,10 @@
                     </template>
                 </Column>
 
-                <Column :exportable="false" style="min-width:9rem">
+                <Column :exportable="false" v-if="!isArRole" style="min-width:9rem">
                     <template #body="slotProps">
-                        <Button v-if="!isArRole" icon="pi pi-pencil" outlined rounded class="mr-2" @click="editStudent(slotProps.data)" />
-                        <Button v-if="!isArRole" icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteStudent(slotProps.data)" />
+                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editStudent(slotProps.data)" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteStudent(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -85,7 +84,6 @@
         </div>
 
         <Dialog v-model:visible="productDialog" :style="{width: '450px'}" header="Add Student" :modal="true" class="p-fluid">
-            <!-- <img v-if="student.image" :src="`https://primefaces.org/cdn/primevue/images/student/${student.image}`" :alt="student.image" class="block m-auto pb-3" /> -->
             <div class="field">
                 <label for="name">Name</label>
                 <InputText id="name" v-model.trim="student.name" required="true" autofocus :invalid="submitted && !student.name" />
@@ -99,7 +97,6 @@
 
             <div class="field">
                 <label for="telNumber">Phone Number</label>
-                <!-- <InputNumber id="telNumber" v-model="formattedTelNumber" required="true" :invalid="submitted && !student.telNumber" /> -->
                 <InputMask id="telNumber" v-model="student.telNumber" mask="(99)999-99-99" placeholder="(99)999-99-99" required="true" :invalid="submitted && !student.telNumber"  />
             </div>
 
@@ -147,17 +144,6 @@
                 <Button label="Yes" icon="pi pi-check" text @click="deleteStudent" />
             </template>
         </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="student">Are you sure you want to delete the selected Students?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-            </template>
-        </Dialog>
 	</div>
 </template>
 
@@ -173,7 +159,6 @@ const student = ref({});
 const students = ref([]);
 const productDialog = ref(false);
 const deleteStudentDialog = ref(false);
-const deleteProductsDialog = ref(false);
 const selectedStudents = ref();
 const filters = ref({
     'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
@@ -317,17 +302,6 @@ const confirmDeleteStudent = (prod) => {
 
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const confirmDeleteSelected = () => {
-    deleteProductsDialog.value = true;
-};
-
-const deleteSelectedProducts = () => {
-    students.value = students.value.filter(val => !selectedStudents.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedStudents.value = null;
-    toast.add({severity:'success', summary: 'Successful', detail: 'students Deleted', life: 3000});
 };
 
 const getStatusLabel = (status) => {

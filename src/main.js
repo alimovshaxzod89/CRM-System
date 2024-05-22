@@ -209,6 +209,8 @@ app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
+// Additional
+
 import { initializeApp } from "firebase/app";
 import { createPinia } from 'pinia';
 app.use(createPinia());
