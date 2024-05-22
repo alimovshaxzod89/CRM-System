@@ -6,11 +6,15 @@ const router = createRouter({
     history: createWebHashHistory(),
     routes: [
         {
+            path: '/',
+            redirect: '/auth/login', // Redirect root path to login
+        },
+        {
             path: '/students',
             component: AppLayout,
             children: [
                 {
-                    path: '/students',
+                    path: '',
                     name: 'students',
                     component: () => import('@/views/pages/students/Students.vue')
                 },
@@ -36,25 +40,18 @@ const router = createRouter({
                 },
             ]
         },
-        // {
-        //     path: '/landing',
-        //     name: 'landing',
-        //     component: () => import('@/views/pages/Landing.vue')
-        // },
         {
             path: '/pages/notfound',
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
         },
-
         {
             path: '/auth/login',
             name: 'login',
             component: () => import('@/views/pages/auth/Login.vue'),
             meta: {
                 requiresAuth: false // Indicate that this route doesn't require authentication
-              }
-        
+            }
         },
         {
             path: '/auth/access',
@@ -67,6 +64,15 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/Error.vue')
         }
     ]
+});
+
+router.beforeEach((to, from, next) => {
+    const isAuthenticated = !!localStorage.getItem('fb-token'); // Check if user is authenticated
+    if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+        next('/auth/login'); // Redirect to login if not authenticated
+    } else {
+        next(); // Proceed to route
+    }
 });
 
 export default router;
