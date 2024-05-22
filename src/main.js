@@ -209,4 +209,20 @@ app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
+import { initializeApp } from "firebase/app";
+import { createPinia } from 'pinia';
+app.use(createPinia());
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDf54TToGO1Z6siZP-DvOq0TpZY9iU5FVw",
+    authDomain: "crmsystemuic.firebaseapp.com",
+    projectId: "crmsystemuic",
+    storageBucket: "crmsystemuic.appspot.com",
+    messagingSenderId: "128795561621",
+    appId: "1:128795561621:web:44cf3b4971c17773ead59c"
+  };
+initializeApp(firebaseConfig);
+
+
 app.mount('#app');

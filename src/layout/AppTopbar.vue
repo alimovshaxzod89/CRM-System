@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
+import { getAuth, signOut } from 'firebase/auth';
+const visible = ref(false);
+
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
@@ -11,6 +14,18 @@ const router = useRouter();
 
 onMounted(() => {
     bindOutsideClickListener();
+
+    const tokenExpiration = new Date(localStorage.getItem('fb-token-exp'));
+
+    if (!tokenExpiration || new Date > tokenExpiration) {
+        localStorage.removeItem('fb-token');
+        localStorage.removeItem('fb-token-exp');
+        localStorage.removeItem('role');
+        router.push('/auth/login');
+    } else {
+        console.log("Token is valid.");
+    }
+
 });
 
 onBeforeUnmount(() => {
@@ -58,14 +73,27 @@ const isOutsideClicked = (event) => {
 
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
+
+
+const logout = () => {
+    try {
+        const auth = getAuth();
+        signOut(auth);
+        localStorage.removeItem('fb-token');
+        localStorage.removeItem('fb-token-exp');
+        router.push('/auth/login');
+    } catch (error) {
+        console.error('Error logging out:', error.message);
+    }
+};
 </script>
 
 <template>
     <div class="layout-topbar">
-        <router-link to="/" class="layout-topbar-logo">
+        <!-- <router-link to="/" class="layout-topbar-logo">
             <img :src="logoUrl" alt="logo" />
             <span>SAKAI</span>
-        </router-link>
+        </router-link> -->
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
             <i class="pi pi-bars"></i>
@@ -76,20 +104,27 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
-            </button>
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-user"></i>
+            
+            <button @click="visible = true"  class="p-link layout-topbar-button">
+                <i class='bx bx-log-out'></i>
                 <span>Profile</span>
             </button>
-            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
-                <i class="pi pi-cog"></i>
-                <span>Settings</span>
-            </button>
+
+            <!-- <Button label="Show" @click="visible = true" /> -->
+
+            <Dialog v-model:visible="visible" modal header="Confirm Log out" :style="{ width: '25rem' }">
+                <h4 class="p-text-secondary block mb-5">Are you sure you want to log out?</h4>
+
+                <div class="flex justify-content-end gap-2">
+                    <Button type="button" label="No" severity="secondary" @click="visible = false"></Button>
+                    <Button type="button" label="Yes" severity="danger" @click="logout()"></Button>
+                </div>
+            </Dialog>
         </div>
+
+
     </div>
 </template>
 
 <style lang="scss" scoped></style>
+
